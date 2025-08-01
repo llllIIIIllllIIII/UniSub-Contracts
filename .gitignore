@@ -1,0 +1,9 @@
+node_modules/
+cache/
+artifacts/
+.env
+coverage/
+typechain/
+typechain-types/
+deployments/
+.vscode/
