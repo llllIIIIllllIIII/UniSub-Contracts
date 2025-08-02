@@ -8,7 +8,15 @@
     "compile": "npx hardhat compile",
     "node": "npx hardhat node",
     "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
-    "clean": "npx hardhat clean"
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "deploy:mumbai": "npx hardhat run scripts/deploy.js --network mumbai",
+    "deploy:amoy": "npx hardhat run scripts/deploy.js --network amoy",
+    "interact:local": "npx hardhat run scripts/interact.js --network localhost",
+    "interact:sepolia": "npx hardhat run scripts/interact.js --network sepolia",
+    "interact:mumbai": "npx hardhat run scripts/interact.js --network mumbai",
+    "interact:amoy": "npx hardhat run scripts/interact.js --network amoy",
+    "clean": "npx hardhat clean",
+    "web": "cd web && python3 -m http.server 8080"
   },
   "keywords": [],
   "author": "",
@@ -22,5 +30,8 @@
     "ethereum-waffle": "^4.0.10",
     "ethers": "^5.8.0",
     "hardhat": "^2.26.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
   }
 }

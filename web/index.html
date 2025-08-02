@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniSub - NFT Subscription Platform</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #5a67d8;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .status-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #5a67d8, #667eea);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 103, 216, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .btn-warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .btn-danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #5a67d8;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .collection-card {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .collection-card:hover {
+            border-color: #5a67d8;
+            transform: translateY(-3px);
+        }
+
+        .collection-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .collection-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5a67d8, #667eea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            border-color: #48bb78;
+            color: #22543d;
+        }
+
+        .alert-error {
+            background: #fff5f5;
+            border-color: #f56565;
+            color: #742a2a;
+        }
+
+        .alert-info {
+            background: #ebf8ff;
+            border-color: #4299e1;
+            color: #2a4365;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5a67d8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .network-info {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .balance-display {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            margin: 10px 0;
+        }
+
+        .hidden { display: none !important; }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .container { padding: 10px; }
+            .card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 UniSub</h1>
+            <p>去中心化 NFT 訂閱平台測試界面</p>
+        </div>
+
+        <!-- Network & Connection Status -->
+        <div class="network-info" id="networkInfo">
+            <span id="networkStatus">🔴 請連接錢包</span>
+        </div>
+
+        <!-- Status Section -->
+        <div class="status-section">
+            <!-- Wallet Connection -->
+            <div class="card">
+                <h3>🔗 錢包連接</h3>
+                <div class="balance-display">
+                    <div><strong>地址:</strong> <span id="walletAddress">未連接</span></div>
+                    <div><strong>ETH 餘額:</strong> <span id="ethBalance">0</span></div>
+                    <div><strong>USDT 餘額:</strong> <span id="usdtBalance">0</span></div>
+                </div>
+                <button class="btn" id="connectWallet">連接 MetaMask</button>
+                <button class="btn btn-success" id="faucetBtn" disabled>領取測試 USDT</button>
+            </div>
+
+            <!-- Contract Info -->
+            <div class="card">
+                <h3>📋 合約資訊</h3>
+                <div class="input-group">
+                    <label>USDT 合約地址:</label>
+                    <input type="text" id="usdtAddress" placeholder="請輸入 USDT 合約地址">
+                </div>
+                <div class="input-group">
+                    <label>Factory 合約地址:</label>
+                    <input type="text" id="factoryAddress" placeholder="請輸入 Factory 合約地址">
+                </div>
+                <button class="btn btn-warning" id="loadContracts">載入合約</button>
+            </div>
+        </div>
+
+        <!-- Collections Display -->
+        <div class="card">
+            <h3>🎬 可用訂閱服務</h3>
+            <button class="btn" id="loadCollections" disabled>載入服務列表</button>
+            <div id="collectionsContainer" class="collections-grid"></div>
+        </div>
+
+        <!-- User Subscriptions -->
+        <div class="card">
+            <h3>📊 我的訂閱</h3>
+            <button class="btn" id="loadMySubscriptions" disabled>載入我的訂閱</button>
+            <div id="subscriptionsContainer"></div>
+        </div>
+
+        <!-- Create New Collection (Service Provider) -->
+        <div class="card">
+            <h3>🏭 創建新服務 (服務提供商)</h3>
+            <div class="input-group">
+                <label>服務名稱:</label>
+                <input type="text" id="newServiceName" placeholder="例: Discord Premium">
+            </div>
+            <div class="input-group">
+                <label>代幣符號:</label>
+                <input type="text" id="newServiceSymbol" placeholder="例: DISC">
+            </div>
+            <div class="input-group">
+                <label>價格 (USDT):</label>
+                <input type="number" id="newServicePrice" placeholder="例: 5" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>訂閱期間 (天):</label>
+                <input type="number" id="newServiceDuration" placeholder="例: 30" min="1">
+            </div>
+            <button class="btn btn-success" id="createCollection" disabled>創建服務</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="messagesContainer"></div>
+
+        <div class="footer">
+            <p>🔗 UniSub - Blockchain Subscription Platform | Built with ❤️</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let provider, signer, userAddress;
+        let usdtContract, factoryContract;
+        let isConnected = false;
+
+        // Contract ABIs (simplified)
+        const USDT_ABI = [
+            "function balanceOf(address owner) view returns (uint256)",
+            "function faucet(address to) external",
+            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)"
+        ];
+
+        const FACTORY_ABI = [
+            "function getAllCollections() view returns (address[])",
+            "function getCollectionInfo(address collection) view returns (tuple(string name, string symbol, address owner, uint256 price, uint256 duration, uint256 createdAt, bool isActive))",
+            "function createSubscriptionCollection(string name, string symbol, uint256 price, uint256 duration) external returns (address)",
+            "function getMySubscriptions(address user) view returns (address[] collections, uint256[][] tokenIds, uint256[][] expiryTimes)",
+            "function hasAnyValidSubscription(address user) view returns (bool hasSubscription, address[] collectionsWithSubscription)"
+        ];
+
+        const SUBSCRIPTION_ABI = [
+            "function mintSubscription() external",
+            "function hasValidSubscription(address user) view returns (bool)",
+            "function getUserValidSubscriptions(address user) view returns (uint256[] tokenIds, uint256[] expiryTimes)",
+            "function renewSubscription(uint256 tokenId) external",
+            "function price() view returns (uint256)",
+            "function duration() view returns (uint256)",
+            "function name() view returns (string)",
+            "function symbol() view returns (string)"
+        ];
+
+        // Utility functions
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messagesContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            container.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                container.removeChild(alertDiv);
+            }, 5000);
+        }
+
+        function formatEther(value) {
+            return ethers.utils.formatEther(value);
+        }
+
+        function formatUSDT(value) {
+            return ethers.utils.formatUnits(value, 6);
+        }
+
+        function parseUSDT(value) {
+            return ethers.utils.parseUnits(value.toString(), 6);
+        }
+
+        // Wallet connection
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+                    
+                    document.getElementById('walletAddress').textContent = 
+                        userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+                    
+                    await updateBalances();
+                    await updateNetworkInfo();
+                    
+                    isConnected = true;
+                    document.getElementById('connectWallet').textContent = '✅ 已連接';
+                    document.getElementById('faucetBtn').disabled = false;
+                    
+                    showMessage('錢包連接成功!', 'success');
+                } else {
+                    showMessage('請安裝 MetaMask!', 'error');
+                }
+            } catch (error) {
+                showMessage('連接失敗: ' + error.message, 'error');
+            }
+        }
+
+        async function updateBalances() {
+            if (!isConnected) return;
+            
+            try {
+                const ethBalance = await provider.getBalance(userAddress);
+                document.getElementById('ethBalance').textContent = 
+                    parseFloat(formatEther(ethBalance)).toFixed(4) + ' ETH';
+                
+                if (usdtContract) {
+                    const usdtBalance = await usdtContract.balanceOf(userAddress);
+                    document.getElementById('usdtBalance').textContent = 
+                        formatUSDT(usdtBalance) + ' USDT';
+                }
+            } catch (error) {
+                console.error('更新餘額失敗:', error);
+            }
+        }
+
+        async function updateNetworkInfo() {
+            if (!provider) return;
+            
+            try {
+                const network = await provider.getNetwork();
+                const networkNames = {
+                    1: 'Ethereum Mainnet',
+                    11155111: 'Sepolia Testnet',
+                    80001: 'Mumbai Testnet',
+                    80002: 'Amoy Testnet',
+                    1337: 'Localhost'
+                };
+                
+                const networkName = networkNames[network.chainId] || `Chain ID: ${network.chainId}`;
+                document.getElementById('networkStatus').innerHTML = 
+                    `🟢 ${networkName}`;
+                    
+                if (network.chainId === 1) {
+                    showMessage('⚠️ 您在主網上，請切換到測試網!', 'error');
+                }
+            } catch (error) {
+                console.error('獲取網絡資訊失敗:', error);
+            }
+        }
+
+        // Contract interactions
+        async function loadContracts() {
+            try {
+                const usdtAddress = document.getElementById('usdtAddress').value;
+                const factoryAddress = document.getElementById('factoryAddress').value;
+                
+                if (!usdtAddress || !factoryAddress) {
+                    showMessage('請輸入合約地址!', 'error');
+                    return;
+                }
+                
+                usdtContract = new ethers.Contract(usdtAddress, USDT_ABI, signer);
+                factoryContract = new ethers.Contract(factoryAddress, FACTORY_ABI, signer);
+                
+                await updateBalances();
+                
+                // Enable buttons
+                document.getElementById('loadCollections').disabled = false;
+                document.getElementById('loadMySubscriptions').disabled = false;
+                document.getElementById('createCollection').disabled = false;
+                
+                showMessage('合約載入成功!', 'success');
+            } catch (error) {
+                showMessage('載入合約失敗: ' + error.message, 'error');
+            }
+        }
+
+        async function getFaucet() {
+            try {
+                if (!usdtContract) {
+                    showMessage('請先載入合約!', 'error');
+                    return;
+                }
+                
+                document.getElementById('faucetBtn').innerHTML = 
+                    '<div class="loading"></div>領取中...';
+                
+                const tx = await usdtContract.faucet(userAddress);
+                await tx.wait();
+                
+                await updateBalances();
+                showMessage('成功領取 1000 USDT!', 'success');
+                
+                document.getElementById('faucetBtn').innerHTML = '領取測試 USDT';
+            } catch (error) {
+                showMessage('領取失敗: ' + error.message, 'error');
+                document.getElementById('faucetBtn').innerHTML = '領取測試 USDT';
+            }
+        }
+
+        async function loadCollections() {
+            try {
+                const collections = await factoryContract.getAllCollections();
+                const container = document.getElementById('collectionsContainer');
+                container.innerHTML = '';
+                
+                if (collections.length === 0) {
+                    container.innerHTML = '<p>暫無可用服務</p>';
+                    return;
+                }
+                
+                for (const collectionAddress of collections) {
+                    const info = await factoryContract.getCollectionInfo(collectionAddress);
+                    const subscriptionContract = new ethers.Contract(collectionAddress, SUBSCRIPTION_ABI, signer);
+                    
+                    const hasSubscription = await subscriptionContract.hasValidSubscription(userAddress);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'collection-card';
+                    card.innerHTML = `
+                        <div class="collection-header">
+                            <div class="collection-icon">${info.symbol.slice(0, 2)}</div>
+                            <div>
+                                <h4>${info.name}</h4>
+                                <small>${collectionAddress.slice(0, 10)}...</small>
+                            </div>
+                        </div>
+                        <div><strong>價格:</strong> ${formatUSDT(info.price)} USDT</div>
+                        <div><strong>期間:</strong> ${info.duration / (24 * 60 * 60)} 天</div>
+                        <div><strong>狀態:</strong> ${hasSubscription ? '✅ 已訂閱' : '⭕ 未訂閱'}</div>
+                        <button class="btn ${hasSubscription ? 'btn-warning' : 'btn-success'}" 
+                                onclick="subscribeToService('${collectionAddress}', '${formatUSDT(info.price)}', '${info.name}', ${hasSubscription})">
+                            ${hasSubscription ? '續費' : '訂閱'}
+                        </button>
+                    `;
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                showMessage('載入服務失敗: ' + error.message, 'error');
+            }
+        }
+
+        async function subscribeToService(collectionAddress, price, name, isRenewal = false) {
+            try {
+                const subscriptionContract = new ethers.Contract(collectionAddress, SUBSCRIPTION_ABI, signer);
+                const priceWei = parseUSDT(price);
+                
+                showMessage(`正在${isRenewal ? '續費' : '訂閱'} ${name}...`, 'info');
+                
+                // Check allowance
+                const allowance = await usdtContract.allowance(userAddress, collectionAddress);
+                if (allowance.lt(priceWei)) {
+                    showMessage('正在授權 USDT...', 'info');
+                    const approveTx = await usdtContract.approve(collectionAddress, priceWei);
+                    await approveTx.wait();
+                }
+                
+                // Subscribe
+                const tx = await subscriptionContract.mintSubscription();
+                await tx.wait();
+                
+                await updateBalances();
+                await loadCollections();
+                
+                showMessage(`${name} ${isRenewal ? '續費' : '訂閱'}成功!`, 'success');
+            } catch (error) {
+                showMessage(`${isRenewal ? '續費' : '訂閱'}失敗: ` + error.message, 'error');
+            }
+        }
+
+        async function loadMySubscriptions() {
+            try {
+                const result = await factoryContract.getMySubscriptions(userAddress);
+                const [collections, tokenIds, expiryTimes] = result;
+                const container = document.getElementById('subscriptionsContainer');
+                container.innerHTML = '';
+                
+                if (collections.length === 0) {
+                    container.innerHTML = '<p>您還沒有任何訂閱</p>';
+                    return;
+                }
+                
+                for (let i = 0; i < collections.length; i++) {
+                    const info = await factoryContract.getCollectionInfo(collections[i]);
+                    const subscriptionContract = new ethers.Contract(collections[i], SUBSCRIPTION_ABI, signer);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'collection-card';
+                    
+                    let tokensHtml = '';
+                    for (let j = 0; j < tokenIds[i].length; j++) {
+                        const expiry = new Date(expiryTimes[i][j] * 1000);
+                        const isExpired = Date.now() > expiry.getTime();
+                        tokensHtml += `
+                            <div>
+                                Token #${tokenIds[i][j]}: 
+                                ${isExpired ? '❌ 已過期' : '✅ 有效'} 
+                                (到期: ${expiry.toLocaleDateString()})
+                            </div>
+                        `;
+                    }
+                    
+                    card.innerHTML = `
+                        <h4>${info.name}</h4>
+                        <div><strong>價格:</strong> ${formatUSDT(info.price)} USDT</div>
+                        <div><strong>我的訂閱:</strong></div>
+                        ${tokensHtml}
+                    `;
+                    
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                showMessage('載入訂閱失敗: ' + error.message, 'error');
+            }
+        }
+
+        async function createCollection() {
+            try {
+                const name = document.getElementById('newServiceName').value;
+                const symbol = document.getElementById('newServiceSymbol').value;
+                const price = document.getElementById('newServicePrice').value;
+                const duration = document.getElementById('newServiceDuration').value;
+                
+                if (!name || !symbol || !price || !duration) {
+                    showMessage('請填寫所有欄位!', 'error');
+                    return;
+                }
+                
+                const priceWei = parseUSDT(price);
+                const durationSeconds = duration * 24 * 60 * 60;
+                
+                showMessage('正在創建服務...', 'info');
+                
+                const tx = await factoryContract.createSubscriptionCollection(
+                    name, symbol, priceWei, durationSeconds
+                );
+                await tx.wait();
+                
+                // Clear form
+                document.getElementById('newServiceName').value = '';
+                document.getElementById('newServiceSymbol').value = '';
+                document.getElementById('newServicePrice').value = '';
+                document.getElementById('newServiceDuration').value = '';
+                
+                await loadCollections();
+                showMessage(`服務 "${name}" 創建成功!`, 'success');
+            } catch (error) {
+                showMessage('創建服務失敗: ' + error.message, 'error');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+        document.getElementById('faucetBtn').addEventListener('click', getFaucet);
+        document.getElementById('loadContracts').addEventListener('click', loadContracts);
+        document.getElementById('loadCollections').addEventListener('click', loadCollections);
+        document.getElementById('loadMySubscriptions').addEventListener('click', loadMySubscriptions);
+        document.getElementById('createCollection').addEventListener('click', createCollection);
+
+        // Auto-connect if already connected
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    await connectWallet();
+                }
+            }
+        });
+
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    location.reload();
+                } else {
+                    connectWallet();
+                }
+            });
+            
+            window.ethereum.on('chainChanged', () => {
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
