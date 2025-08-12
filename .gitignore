@@ -1,9 +1,74 @@
+# Dependencies
 node_modules/
+
+# Build artifacts
 cache/
 artifacts/
+
+# Environment variables
 .env
+
+# Testing
 coverage/
+
+# TypeScript
 typechain/
 typechain-types/
-deployments/
+
+# IDE
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Deployment records (contains specific addresses and private info)
+deployments/
+
+# Deployment configuration files (contains network-specific config)
+MORPH_DEPLOYMENT_CONFIG.md
+DEPLOYMENT_CONFIRMATION.md
+MORPH_HOLESKY_DEPLOYMENT*.md
+
+# Optional documentation (can be excluded to reduce repo size)
+CONTRACT_ABI_GUIDE.md
+PROJECT_STRUCTURE.md
+TESTING_GUIDE.md
+GITHUB_UPLOAD_CHECKLIST.md
+MARKETPLACE_MVP_SUMMARY.md
+MORPH_DEPLOYMENT_CONFIG_TEMPLATE.md
+README_GITHUB.md
+SMART_CONTRACT_SPECIFICATION.md
+TESTNET_GUIDE.md
+README_NEW.md
+
+# Development documentation (exclude from final repo)
+*_GUIDE.md
+*_CHECKLIST.md
+*_SUMMARY.md
+*_SPECIFICATION.md
+AI_AGENT_CONTRACT_GUIDE.md
+CONTRACT_CONFIG_FOR_FRONTEND.json
+FRONTEND_INTEGRATION_EXAMPLE.js
+
+# Frontend files (separate frontend workspace)
+web/
+frontend-integration-example.js
+
+# Temporary files
+*.tmp
+*.temp

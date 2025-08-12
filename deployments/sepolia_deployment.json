@@ -1,0 +1,29 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-08-02T17:26:41.442Z",
+  "deployer": "0x86D243eb5C0e0E8167DECbADF84fC9095685fb08",
+  "contracts": {
+    "mockUSDT": "0x51E4026e3ea3E57C57F27a46D1568916e915350f",
+    "subscriptionFactory": "0xdCb1A78DdC236b34606fC316c715e509Db5EBDcf"
+  },
+  "collections": [
+    {
+      "name": "Netflix Premium",
+      "address": "0x1D62ecD70C4B7091A9f809e2d05db6075BDF6eee",
+      "price": "15.0",
+      "duration": 30
+    },
+    {
+      "name": "Spotify Premium",
+      "address": "0x63cD8d64757DE5f52Fb87d7727d2b4DFCe9B5d05",
+      "price": "10.0",
+      "duration": 30
+    },
+    {
+      "name": "YouTube Premium",
+      "address": "0xdAAB147E490274524292255eD021c15563eb006C",
+      "price": "12.0",
+      "duration": 30
+    }
+  ]
+}

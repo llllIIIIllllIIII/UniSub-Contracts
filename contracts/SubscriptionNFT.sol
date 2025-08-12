@@ -279,4 +279,19 @@ contract SubscriptionNFT is ERC721, Ownable, ReentrancyGuard {
     {
         return (name(), price, duration, _tokenIdCounter);
     }
+
+    /**
+     * @dev Reject any ETH sent to this contract
+     * This prevents gas estimation errors when ETH is accidentally sent
+     */
+    receive() external payable {
+        revert("This contract does not accept ETH");
+    }
+
+    /**
+     * @dev Reject any direct calls to this contract
+     */
+    fallback() external payable {
+        revert("Function not found");
+    }
 }

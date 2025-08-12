@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import "./SubscriptionNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title SubscriptionFactory
@@ -11,6 +13,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * Service providers can deploy their own subscription NFT contracts
  */
 contract SubscriptionFactory is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
     
     // USDT token address for all subscriptions
     address public immutable usdtToken;
@@ -357,5 +360,242 @@ contract SubscriptionFactory is Ownable, ReentrancyGuard {
                 }
             }
         }
+    }
+
+    // =====================================================================
+    // MARKETPLACE FUNCTIONALITY (MVP for Hackathon Demo)
+    // =====================================================================
+    
+    // Market listing structure
+    struct MarketListing {
+        bytes32 listingId;
+        address seller;
+        address collection;
+        uint256 tokenId;
+        uint256 price;
+        uint256 expiryTime;
+        bool isActive;
+        uint256 listedAt;
+    }
+    
+    // State variables for marketplace
+    mapping(bytes32 => MarketListing) public marketListings;
+    bytes32[] public allListingIds;
+    mapping(address => bytes32[]) public sellerListings;
+    
+    // Events
+    event NFTListed(
+        bytes32 indexed listingId,
+        address indexed seller,
+        address indexed collection,
+        uint256 tokenId,
+        uint256 price,
+        uint256 expiryTime
+    );
+    
+    event NFTSold(
+        bytes32 indexed listingId,
+        address indexed buyer,
+        address indexed seller,
+        uint256 price
+    );
+    
+    event ListingCancelled(
+        bytes32 indexed listingId,
+        address indexed seller
+    );
+
+    /**
+     * @dev List a subscription NFT for sale in the marketplace
+     * @param collection Address of the subscription collection
+     * @param tokenId Token ID to list for sale
+     * @param price Price in USDT (with 6 decimals)
+     */
+    function listSubscription(
+        address collection,
+        uint256 tokenId,
+        uint256 price
+    ) external nonReentrant {
+        require(isValidCollection[collection], "Invalid collection");
+        require(price > 0, "Price must be greater than 0");
+        
+        SubscriptionNFT nft = SubscriptionNFT(collection);
+        
+        // Verify ownership
+        require(nft.ownerOf(tokenId) == msg.sender, "Not token owner");
+        
+        // Get expiry time for display
+        uint256 expiryTime = nft.getExpiryTime(tokenId);
+        
+        // Generate unique listing ID
+        bytes32 listingId = keccak256(
+            abi.encodePacked(collection, tokenId, msg.sender, block.timestamp)
+        );
+        
+        // Create listing
+        marketListings[listingId] = MarketListing({
+            listingId: listingId,
+            seller: msg.sender,
+            collection: collection,
+            tokenId: tokenId,
+            price: price,
+            expiryTime: expiryTime,
+            isActive: true,
+            listedAt: block.timestamp
+        });
+        
+        // Track listings
+        allListingIds.push(listingId);
+        sellerListings[msg.sender].push(listingId);
+        
+        emit NFTListed(listingId, msg.sender, collection, tokenId, price, expiryTime);
+    }
+
+    /**
+     * @dev Buy a subscription NFT from the marketplace
+     * @param listingId ID of the listing to purchase
+     */
+    function buySubscription(bytes32 listingId) external nonReentrant {
+        MarketListing storage listing = marketListings[listingId];
+        require(listing.isActive, "Listing not active");
+        require(listing.seller != msg.sender, "Cannot buy your own NFT");
+        
+        SubscriptionNFT nft = SubscriptionNFT(listing.collection);
+        
+        // Verify NFT still exists and seller still owns it
+        require(nft.ownerOf(listing.tokenId) == listing.seller, "NFT no longer owned by seller");
+        
+        // Transfer USDT from buyer to seller (no platform fee)
+        IERC20(usdtToken).transferFrom(msg.sender, listing.seller, listing.price);
+        
+        // Transfer NFT from seller to buyer
+        nft.safeTransferFrom(listing.seller, msg.sender, listing.tokenId);
+        
+        // Mark listing as inactive
+        listing.isActive = false;
+        
+        emit NFTSold(listingId, msg.sender, listing.seller, listing.price);
+    }
+
+    /**
+     * @dev Cancel a marketplace listing
+     * @param listingId ID of the listing to cancel
+     */
+    function cancelListing(bytes32 listingId) external {
+        MarketListing storage listing = marketListings[listingId];
+        require(listing.seller == msg.sender, "Not your listing");
+        require(listing.isActive, "Listing not active");
+        
+        listing.isActive = false;
+        
+        emit ListingCancelled(listingId, msg.sender);
+    }
+
+    /**
+     * @dev Get all active marketplace listings
+     * @return activeListings Array of active listings
+     */
+    function getMarketListings() external view returns (MarketListing[] memory activeListings) {
+        uint256 activeCount = 0;
+        
+        // Count active listings
+        for (uint256 i = 0; i < allListingIds.length; i++) {
+            if (marketListings[allListingIds[i]].isActive) {
+                activeCount++;
+            }
+        }
+        
+        // Populate active listings
+        activeListings = new MarketListing[](activeCount);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < allListingIds.length; i++) {
+            bytes32 listingId = allListingIds[i];
+            if (marketListings[listingId].isActive) {
+                activeListings[index] = marketListings[listingId];
+                index++;
+            }
+        }
+    }
+
+    /**
+     * @dev Get listings by collection
+     * @param collection Address of the subscription collection
+     * @return collectionListings Array of active listings for the collection
+     */
+    function getListingsByCollection(address collection) 
+        external 
+        view 
+        returns (MarketListing[] memory collectionListings) 
+    {
+        uint256 count = 0;
+        
+        // Count collection listings
+        for (uint256 i = 0; i < allListingIds.length; i++) {
+            MarketListing storage listing = marketListings[allListingIds[i]];
+            if (listing.isActive && listing.collection == collection) {
+                count++;
+            }
+        }
+        
+        // Populate collection listings
+        collectionListings = new MarketListing[](count);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < allListingIds.length; i++) {
+            MarketListing storage listing = marketListings[allListingIds[i]];
+            if (listing.isActive && listing.collection == collection) {
+                collectionListings[index] = listing;
+                index++;
+            }
+        }
+    }
+
+    /**
+     * @dev Get user's active listings
+     * @param user Address of the user
+     * @return userListings Array of user's active listings
+     */
+    function getUserListings(address user) 
+        external 
+        view 
+        returns (MarketListing[] memory userListings) 
+    {
+        bytes32[] memory userListingIds = sellerListings[user];
+        uint256 activeCount = 0;
+        
+        // Count active user listings
+        for (uint256 i = 0; i < userListingIds.length; i++) {
+            if (marketListings[userListingIds[i]].isActive) {
+                activeCount++;
+            }
+        }
+        
+        // Populate active user listings
+        userListings = new MarketListing[](activeCount);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < userListingIds.length; i++) {
+            bytes32 listingId = userListingIds[i];
+            if (marketListings[listingId].isActive) {
+                userListings[index] = marketListings[listingId];
+                index++;
+            }
+        }
+    }
+
+    /**
+     * @dev Reject any ETH sent to this contract
+     * This prevents gas estimation errors when ETH is accidentally sent
+     */
+    receive() external payable {
+        revert("This contract does not accept ETH");
+    }
+
+    /**
+     * @dev Reject any direct calls to this contract
+     */
+    fallback() external payable {
+        revert("Function not found");
     }
 }
