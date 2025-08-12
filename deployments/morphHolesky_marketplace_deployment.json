@@ -1,0 +1,33 @@
+{
+  "network": "morphHolesky",
+  "timestamp": "2025-08-12T07:22:09.985Z",
+  "deployer": "0x676f4F15aDA4618703e1e93cF393c24870ef4092",
+  "contracts": {
+    "mockUSDT": "0xA2c5e6a98dc69CD3e7c94d3694B7D31DB5FFE33F",
+    "subscriptionFactory": "0x657296a72483F8F330287B2F1E20293a2a2C2F52"
+  },
+  "collections": [
+    {
+      "name": "Netflix Premium",
+      "symbol": "NFLX",
+      "address": "0x2FCc622C00bBD6961e08C974167a233cd9FFC283",
+      "price": "15.0",
+      "duration": 30
+    },
+    {
+      "name": "Spotify Premium",
+      "symbol": "SPOT",
+      "address": "0x1c9fFB664d59F60d157e5885C2EdFB287B913091",
+      "price": "10.0",
+      "duration": 30
+    }
+  ],
+  "marketplace": {
+    "totalListings": 1,
+    "demoListing": {
+      "tokenId": "0",
+      "price": "12.0",
+      "seller": "0x676f4F15aDA4618703e1e93cF393c24870ef4092"
+    }
+  }
+}

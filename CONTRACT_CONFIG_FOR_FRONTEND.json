@@ -1,0 +1,76 @@
+{
+  "contractAddresses": {
+    "morphHolesky": {
+      "chainId": 2810,
+      "rpcUrl": "https://rpc-quicknode-holesky.morphl2.io",
+      "explorer": "https://explorer-holesky.morphl2.io",
+      "contracts": {
+        "mockUSDT": "0xA2c5e6a98dc69CD3e7c94d3694B7D31DB5FFE33F",
+        "subscriptionFactory": "0x657296a72483F8F330287B2F1E20293a2a2C2F52"
+      },
+      "services": {
+        "netflixPremium": "0x2FCc622C00bBD6961e08C974167a233cd9FFC283",
+        "spotifyPremium": "0x1c9fFB664d59F60d157e5885C2EdFB287B913091"
+      }
+    }
+  },
+  "abis": {
+    "SubscriptionFactory": [
+      "function createSubscriptionCollection(string memory _name, string memory _symbol, uint256 _price, uint256 _duration) external returns (address)",
+      "function getAllCollections() external view returns (address[])",
+      "function getCollectionsByOwner(address owner) external view returns (address[])",
+      "function getActiveCollections() external view returns (address[])",
+      "function isValidCollection(address collection) external view returns (bool)",
+      "function getCollectionInfo(address collection) external view returns (tuple(string name, string symbol, address owner, uint256 price, uint256 duration, uint256 createdAt, bool isActive))",
+      "function listSubscription(address collection, uint256 tokenId, uint256 price) external returns (bytes32)",
+      "function buySubscription(bytes32 listingId) external",
+      "function cancelListing(bytes32 listingId) external",
+      "function getMarketListings() external view returns (tuple(bytes32 listingId, address seller, address collection, uint256 tokenId, uint256 price, uint256 expiryTime, bool isActive, uint256 listedAt)[])",
+      "event CollectionCreated(address indexed creator, address indexed collection, string name, string symbol, uint256 price, uint256 duration)",
+      "event NFTListed(bytes32 indexed listingId, address indexed seller, address indexed collection, uint256 tokenId, uint256 price, uint256 expiryTime)",
+      "event NFTSold(bytes32 indexed listingId, address indexed buyer, address indexed seller, uint256 price)",
+      "event ListingCancelled(bytes32 indexed listingId, address indexed seller)"
+    ],
+    "SubscriptionNFT": [
+      "function mintSubscription() external returns (uint256)",
+      "function renewSubscription(uint256 _tokenId) external",
+      "function hasValidSubscription(address _user) external view returns (bool)",
+      "function getExpiryTime(uint256 _tokenId) external view returns (uint256)",
+      "function getUserTokens(address _user) external view returns (uint256[])",
+      "function price() external view returns (uint256)",
+      "function duration() external view returns (uint256)",
+      "function usdtToken() external view returns (address)",
+      "function getContractInfo() external view returns (string memory serviceName, uint256 subscriptionPrice, uint256 subscriptionDuration, uint256 totalSupply)",
+      "function isExpired(uint256 tokenId) external view returns (bool)",
+      "function name() external view returns (string memory)",
+      "function symbol() external view returns (string memory)",
+      "function tokenURI(uint256 _tokenId) external view returns (string memory)",
+      "function ownerOf(uint256 _tokenId) external view returns (address)",
+      "function approve(address _to, uint256 _tokenId) external",
+      "function getApproved(uint256 _tokenId) external view returns (address)",
+      "function setApprovalForAll(address _operator, bool _approved) external",
+      "function isApprovedForAll(address _owner, address _operator) external view returns (bool)",
+      "function transferFrom(address _from, address _to, uint256 _tokenId) external",
+      "function safeTransferFrom(address _from, address _to, uint256 _tokenId) external",
+      "function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) external",
+      "function balanceOf(address _owner) external view returns (uint256)",
+      "function totalSupply() external view returns (uint256)",
+      "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
+      "event SubscriptionMinted(address indexed user, uint256 indexed tokenId, uint256 expirationTime)",
+      "event SubscriptionRenewed(uint256 indexed tokenId, uint256 newExpirationTime)",
+      "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+      "event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)"
+    ],
+    "MockUSDT": [
+      "function balanceOf(address account) external view returns (uint256)",
+      "function allowance(address owner, address spender) external view returns (uint256)",
+      "function approve(address spender, uint256 amount) external returns (bool)",
+      "function transfer(address to, uint256 amount) external returns (bool)",
+      "function transferFrom(address from, address to, uint256 amount) external returns (bool)",
+      "function mint(address to, uint256 amount) external",
+      "function decimals() external view returns (uint8)",
+      "event Transfer(address indexed from, address indexed to, uint256 value)",
+      "event Approval(address indexed owner, address indexed spender, uint256 value)"
+    ]
+  }
+}

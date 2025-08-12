@@ -1,0 +1,29 @@
+{
+  "network": "morphHolesky",
+  "timestamp": "2025-08-09T20:42:04.661Z",
+  "deployer": "0x676f4F15aDA4618703e1e93cF393c24870ef4092",
+  "contracts": {
+    "mockUSDT": "0x5BD6BA046bCC634A52214D6c0b96b0c1739CE96A",
+    "subscriptionFactory": "0x05086c796a16B7E27B01656f13d8fC53548472F5"
+  },
+  "collections": [
+    {
+      "name": "Netflix Premium",
+      "address": "0x9EecE4EbA5A1FAdfD81861514B203a2899D3dC08",
+      "price": "15.0",
+      "duration": 30
+    },
+    {
+      "name": "Spotify Premium",
+      "address": "0x9736277Fe5dE3394aC3227F8DBFE76F55508309f",
+      "price": "10.0",
+      "duration": 30
+    },
+    {
+      "name": "YouTube Premium",
+      "address": "0x2C748634c1B956AF19C03f95172a2CEB6fC39b3A",
+      "price": "12.0",
+      "duration": 30
+    }
+  ]
+}
